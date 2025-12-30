@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- PDF.js library for displaying PDFs in browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-logout:hover {
+            background: #5a6268;
+        }
+
+        .form-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .file-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .employees-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .employees-table th,
+        .employees-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .employees-table th {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .employees-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .employee-picture {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .employee-picture:hover {
+            transform: scale(1.1);
+        }
+
+        .file-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .file-link:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        #updateForm {
+            display: none;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-image {
+            max-width: 800px;
+        }
+
+        .modal-pdf {
+            max-width: 900px;
+            min-height: 600px;
+        }
+
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+            line-height: 20px;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #000;
+        }
+
+        .modal-body {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+        }
+
+        .modal-body iframe {
+            width: 100%;
+            height: 70vh;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .modal-body object {
+            width: 100%;
+            height: 70vh;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #pdfFallbackMessage {
+            margin-top: 20px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            display: inline-block;
+            color: #333;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .file-link {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .file-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Employee Management System</h1>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <span class="user-email" id="userEmail"></span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <!-- Create Form -->
+        <div class="form-section" id="createForm">
+            <h2>Add New Employee</h2>
+            <form id="employeeForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="position">Position</label>
+                    <input type="text" id="position" name="position">
+                </div>
+                <div class="form-group">
+                    <label for="department">Department</label>
+                    <input type="text" id="department" name="department">
+                </div>
+                <div class="form-group">
+                    <label for="picture">Picture (JPG, PNG)</label>
+                    <input type="file" id="picture" name="picture" accept="image/*">
+                    <div class="file-info">Upload employee picture</div>
+                </div>
+                <div class="form-group">
+                    <label for="resume">Resume (PDF)</label>
+                    <input type="file" id="resume" name="resume" accept=".pdf">
+                    <div class="file-info">Upload employee resume in PDF format</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Employee</button>
+            </form>
+        </div>
+
+        <!-- Update Form -->
+        <div class="form-section" id="updateForm">
+            <h2>Update Employee</h2>
+            <form id="employeeUpdateForm" enctype="multipart/form-data">
+                <input type="hidden" id="updateId" name="id">
+                <div class="form-group">
+                    <label for="updateName">Name *</label>
+                    <input type="text" id="updateName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="updateEmail">Email *</label>
+                    <input type="email" id="updateEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="updatePosition">Position</label>
+                    <input type="text" id="updatePosition" name="position">
+                </div>
+                <div class="form-group">
+                    <label for="updateDepartment">Department</label>
+                    <input type="text" id="updateDepartment" name="department">
+                </div>
+                <div class="form-group">
+                    <label for="updatePicture">Picture (JPG, PNG)</label>
+                    <input type="file" id="updatePicture" name="picture" accept="image/*">
+                    <div class="file-info">Leave empty to keep current picture</div>
+                </div>
+                <div class="form-group">
+                    <label for="updateResume">Resume (PDF)</label>
+                    <input type="file" id="updateResume" name="resume" accept=".pdf">
+                    <div class="file-info">Leave empty to keep current resume</div>
+                </div>
+                <button type="submit" class="btn btn-success">Update Employee</button>
+                <button type="button" class="btn btn-secondary" id="cancelUpdate">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Employees List -->
+        <div>
+            <h2>Employees List</h2>
+            <table class="employees-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Picture</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Resume</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: block;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>🔐 Login Required</h2>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Request PIN -->
+                <div id="requestPinForm" style="display: block;">
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Enter your email address to receive a login PIN
+                    </p>
+                    <div class="form-group">
+                        <label for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="your.email@example.com" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="requestPin()" id="requestPinBtn">
+                        Send PIN to Email
+                    </button>
+                    <div id="pinMessage" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+                </div>
+
+                <!-- Step 2: Verify PIN -->
+                <div id="verifyPinForm" style="display: none;">
+                    <p style="margin-bottom: 20px; color: #666;">
+                        Enter the 6-digit PIN sent to <strong id="pinEmailDisplay"></strong>
+                    </p>
+                    <div class="form-group">
+                        <label for="loginPin">6-Digit PIN</label>
+                        <input type="text" id="loginPin" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="verifyPin()" id="verifyPinBtn">
+                        Verify & Login
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="backToEmail()" style="margin-left: 10px;">
+                        Back
+                    </button>
+                    <div id="verifyMessage" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content modal-image">
+            <div class="modal-header">
+                <h2>Employee Picture</h2>
+                <button class="modal-close" onclick="closeImageModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Employee Picture">
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Modal -->
+    <div id="pdfModal" class="modal">
+        <div class="modal-content modal-pdf">
+            <div class="modal-header">
+                <h2>Employee Resume</h2>
+                <button class="modal-close" onclick="closePdfModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: 75vh;">
+                <!-- Loading message -->
+                <div id="pdfLoading" style="text-align: center; padding: 40px; color: #666;">
+                    <p>Loading PDF...</p>
+                </div>
+                <!-- PDF will be rendered here as canvas elements -->
+                <div id="pdfContainer" style="display: none;"></div>
+                <!-- Navigation controls -->
+                <div id="pdfControls" style="display: none; text-align: center; margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+                    <button class="btn btn-secondary" onclick="previousPage()" id="prevPage">Previous</button>
+                    <span style="margin: 0 15px;">
+                        Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                    </span>
+                    <button class="btn btn-secondary" onclick="nextPage()" id="nextPage">Next</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <a id="downloadPdf" href="" download class="btn btn-primary">Download Resume</a>
+                <button class="btn btn-secondary" onclick="closePdfModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * ========================================
+         * Employee Management System - Frontend JavaScript
+         * ========================================
+         *
+         * This script handles all the interactive parts of our website!
+         * It's like the "remote control" that makes buttons work and updates the screen.
+         *
+         * Main things this script does:
+         * 1. Load employee list from the server
+         * 2. Add new employees
+         * 3. Update existing employees
+         * 4. Delete employees
+         * 5. Show pictures and PDFs in popups
+         * 6. Display success/error messages
+         *
+         * All actions are logged to the browser console so you can see what's happening!
+         * To see the logs: Right-click page → Inspect → Console tab
+         */
+
+        // === LOGGING HELPER FUNCTIONS ===
+        // These help us see what's happening in the browser console
+
+        /**
+         * Log an informational message
+         * Like writing in a diary about normal everyday things
+         */
+        function logInfo(message, data = null) {
+            console.log('ℹ️ INFO:', message);
+            if (data) {
+                console.log('   Data:', data);
+            }
+        }
+
+        /**
+         * Log a success message
+         * Like celebrating when something goes right!
+         */
+        function logSuccess(message, data = null) {
+            console.log('%c✅ SUCCESS:', 'color: green; font-weight: bold', message);
+            if (data) {
+                console.log('   Data:', data);
+            }
+        }
+
+        /**
+         * Log an error message
+         * Like writing down what went wrong so we can fix it
+         */
+        function logError(message, error = null) {
+            console.error('❌ ERROR:', message);
+            if (error) {
+                console.error('   Error details:', error);
+                if (error.stack) {
+                    console.error('   Stack trace:', error.stack);
+                }
+            }
+        }
+
+        /**
+         * Log a warning message
+         * Like a yellow caution sign
+         */
+        function logWarning(message, data = null) {
+            console.warn('⚠️ WARNING:', message);
+            if (data) {
+                console.warn('   Data:', data);
+            }
+        }
+
+        /**
+         * Log the start of an action
+         * Like announcing "I'm starting to do something!"
+         */
+        function logAction(action) {
+            console.log('═══════════════════════════════════════');
+            console.log(`🎬 ACTION: ${action}`);
+            console.log('═══════════════════════════════════════');
+        }
+
+        /**
+         * Log the end of an action
+         * Like saying "I'm done!"
+         */
+        function logActionComplete(action) {
+            console.log(`🏁 COMPLETE: ${action}`);
+            console.log('═══════════════════════════════════════\n');
+        }
+
+        // === AUTHENTICATION FUNCTIONS ===
+        // These handle login and security!
+
+        /**
+         * Get the access token from browser storage
+         */
+        function getAccessToken() {
+            return localStorage.getItem('accessToken');
+        }
+
+        /**
+         * Save the access token to browser storage
+         */
+        function setAccessToken(token) {
+            localStorage.setItem('accessToken', token);
+            logInfo('Access token saved to localStorage');
+        }
+
+        /**
+         * Remove the access token (logout)
+         */
+        function removeAccessToken() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userEmail');
+            logInfo('Access token removed from localStorage');
+        }
+
+        /**
+         * Check if user is logged in
+         */
+        function isLoggedIn() {
+            const token = getAccessToken();
+            return token !== null && token !== '';
+        }
+
+        /**
+         * Request a PIN to be sent to email - STEP 1 of login
+         */
+        function requestPin() {
+            logAction('REQUEST PIN');
+
+            const email = $('#loginEmail').val().trim();
+            logInfo('Email entered: ' + email);
+
+            if (!email) {
+                logWarning('No email entered');
+                showPinMessage('Please enter your email address', 'error');
+                return;
+            }
+
+            // Disable button and show loading
+            $('#requestPinBtn').prop('disabled', true).text('Sending...');
+
+            logInfo('Sending POST request to /api/auth/request-pin...');
+
+            $.ajax({
+                url: '/api/auth/request-pin',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email: email }),
+                success: function(response) {
+                    logSuccess('PIN requested successfully!', response);
+
+                    showPinMessage(response.message + ' Check your terminal/console for the PIN!', 'success');
+
+                    // Switch to PIN entry form after 2 seconds
+                    setTimeout(function() {
+                        $('#requestPinForm').hide();
+                        $('#verifyPinForm').show();
+                        $('#pinEmailDisplay').text(email);
+                        $('#loginPin').focus();
+                    }, 2000);
+
+                    logActionComplete('REQUEST PIN');
+                },
+                error: function(xhr) {
+                    logError('Failed to request PIN', {
+                        status: xhr.status,
+                        response: xhr.responseJSON || xhr.responseText
+                    });
+
+                    showPinMessage(
+                        xhr.responseJSON?.detail || 'Failed to send PIN. Please try again.',
+                        'error'
+                    );
+
+                    $('#requestPinBtn').prop('disabled', false).text('Send PIN to Email');
+                    logActionComplete('REQUEST PIN (with error)');
+                }
+            });
+        }
+
+        /**
+         * Verify the PIN entered by user - STEP 2 of login
+         */
+        function verifyPin() {
+            logAction('VERIFY PIN');
+
+            const email = $('#loginEmail').val().trim();
+            const pin = $('#loginPin').val().trim();
+
+            logInfo('Verifying PIN for: ' + email);
+
+            if (!pin || pin.length !== 6) {
+                logWarning('Invalid PIN format');
+                showVerifyMessage('Please enter a 6-digit PIN', 'error');
+                return;
+            }
+
+            // Disable button and show loading
+            $('#verifyPinBtn').prop('disabled', true).text('Verifying...');
+
+            logInfo('Sending POST request to /api/auth/verify-pin...');
+
+            $.ajax({
+                url: '/api/auth/verify-pin',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ email: email, pin: pin }),
+                success: function(response) {
+                    logSuccess('PIN verified - Login successful!', response);
+
+                    // Save access token and user email
+                    const email = $('#loginEmail').val().trim();
+                    setAccessToken(response.access_token);
+                    localStorage.setItem('userEmail', email);
+
+                    showVerifyMessage('Login successful! Loading application...', 'success');
+
+                    // Hide login modal and show main content
+                    setTimeout(function() {
+                        $('#loginModal').fadeOut(300);
+                        $('.container').show();
+
+                        // Show user info in header
+                        $('#userEmail').text(email);
+                        $('#userInfo').show();
+
+                        loadEmployees();  // Load employees now that we're logged in
+                    }, 1000);
+
+                    logActionComplete('VERIFY PIN');
+                },
+                error: function(xhr) {
+                    logError('Failed to verify PIN', {
+                        status: xhr.status,
+                        response: xhr.responseJSON || xhr.responseText
+                    });
+
+                    showVerifyMessage(
+                        xhr.responseJSON?.detail || 'Invalid PIN. Please try again.',
+                        'error'
+                    );
+
+                    $('#verifyPinBtn').prop('disabled', false).text('Verify & Login');
+                    $('#loginPin').val('').focus();  // Clear PIN field
+                    logActionComplete('VERIFY PIN (with error)');
+                }
+            });
+        }
+
+        /**
+         * Go back to email entry form
+         */
+        function backToEmail() {
+            logInfo('Going back to email entry');
+            $('#verifyPinForm').hide();
+            $('#requestPinForm').show();
+            $('#requestPinBtn').prop('disabled', false).text('Send PIN to Email');
+            $('#loginPin').val('');
+            $('#verifyMessage').hide();
+        }
+
+        /**
+         * Show message in PIN request form
+         */
+        function showPinMessage(text, type) {
+            const messageDiv = $('#pinMessage');
+            messageDiv.removeClass('success error');
+            if (type === 'success') {
+                messageDiv.css({'background-color': '#d4edda', 'color': '#155724', 'border': '1px solid #c3e6cb'});
+            } else {
+                messageDiv.css({'background-color': '#f8d7da', 'color': '#721c24', 'border': '1px solid #f5c6cb'});
+            }
+            messageDiv.text(text).fadeIn();
+        }
+
+        /**
+         * Show message in PIN verify form
+         */
+        function showVerifyMessage(text, type) {
+            const messageDiv = $('#verifyMessage');
+            messageDiv.removeClass('success error');
+            if (type === 'success') {
+                messageDiv.css({'background-color': '#d4edda', 'color': '#155724', 'border': '1px solid #c3e6cb'});
+            } else {
+                messageDiv.css({'background-color': '#f8d7da', 'color': '#721c24', 'border': '1px solid #f5c6cb'});
+            }
+            messageDiv.text(text).fadeIn();
+        }
+
+        /**
+         * Logout function
+         */
+        function logout() {
+            logAction('LOGOUT');
+            removeAccessToken();
+            location.reload();  // Reload page to show login screen
+            logActionComplete('LOGOUT');
+        }
+
+        // === MAIN APPLICATION CODE ===
+
+        $(document).ready(function() {
+            logAction('PAGE LOADED');
+            logInfo('jQuery is ready!');
+            logInfo('Employee Management System starting up...');
+
+            // Check if user is logged in
+            if (isLoggedIn()) {
+                logInfo('User is already logged in!');
+                logInfo('Access token found in localStorage');
+                $('#loginModal').hide();
+                $('.container').show();
+
+                // Show user info in header
+                const userEmail = localStorage.getItem('userEmail');
+                if (userEmail) {
+                    logInfo('User email: ' + userEmail);
+                    $('#userEmail').text(userEmail);
+                    $('#userInfo').show();
+                }
+
+                // Load employees on page load
+                logInfo('Loading employees from server...');
+                loadEmployees();
+            } else {
+                logWarning('User not logged in - showing login modal');
+                $('.container').hide();
+                $('#loginModal').show();
+            }
+
+            // Add Enter key support for login forms
+            $('#loginEmail').keypress(function(e) {
+                if (e.which === 13) requestPin();
+            });
+            $('#loginPin').keypress(function(e) {
+                if (e.which === 13) verifyPin();
+            });
+
+            // Setup AJAX to automatically include authorization token
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    // Only add token for employee API calls (not auth calls)
+                    if (settings.url.includes('/api/employees')) {
+                        const token = getAccessToken();
+                        if (token) {
+                            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                            logInfo('Added authorization header to request');
+                        }
+                    }
+                }
+            });
+
+            logActionComplete('PAGE LOADED');
+
+            // Create employee form submission
+            // This happens when someone clicks "Add Employee" button
+            $('#employeeForm').on('submit', function(e) {
+                logAction('CREATE EMPLOYEE');
+
+                e.preventDefault(); // Stop the form from submitting the old way
+                logInfo('Form submission prevented (we handle it with JavaScript)');
+
+                const formData = new FormData(this);
+                logInfo('Form data collected:', {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    position: formData.get('position'),
+                    department: formData.get('department'),
+                    hasPicture: formData.get('picture')?.name || 'No',
+                    hasResume: formData.get('resume')?.name || 'No'
+                });
+
+                logInfo('Sending POST request to /api/employees...');
+
+                const token = getAccessToken();
+                if (!token) {
+                    logError('No access token found - user not logged in');
+                    showMessage('Please login first', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/employees',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(response) {
+                        logSuccess('Employee created successfully!', response);
+                        showMessage('Employee added successfully!', 'success');
+
+                        logInfo('Resetting form...');
+                        $('#employeeForm')[0].reset();
+
+                        logInfo('Reloading employee list...');
+                        loadEmployees();
+
+                        logActionComplete('CREATE EMPLOYEE');
+                    },
+                    error: function(xhr) {
+                        logError('Failed to create employee', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: xhr.responseJSON || xhr.responseText
+                        });
+                        showMessage('Error: ' + (xhr.responseJSON?.detail || 'Failed to add employee'), 'error');
+                        logActionComplete('CREATE EMPLOYEE (with error)');
+                    }
+                });
+            });
+
+            // Update employee form submission
+            // This happens when someone clicks "Update Employee" button
+            $('#employeeUpdateForm').on('submit', function(e) {
+                logAction('UPDATE EMPLOYEE');
+
+                e.preventDefault();
+                const employeeId = $('#updateId').val();
+                logInfo('Updating employee ID: ' + employeeId);
+
+                const formData = new FormData(this);
+                logInfo('Update form data collected:', {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    position: formData.get('position'),
+                    department: formData.get('department'),
+                    hasNewPicture: formData.get('picture')?.name || 'No',
+                    hasNewResume: formData.get('resume')?.name || 'No'
+                });
+
+                logInfo('Sending PUT request to /api/employees/' + employeeId + '...');
+
+                const token = getAccessToken();
+                if (!token) {
+                    logError('No access token found - user not logged in');
+                    showMessage('Please login first', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/employees/' + employeeId,
+                    type: 'PUT',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(response) {
+                        logSuccess('Employee updated successfully!', response);
+                        showMessage('Employee updated successfully!', 'success');
+
+                        logInfo('Hiding update form, showing create form...');
+                        $('#updateForm').hide();
+                        $('#createForm').show();
+
+                        logInfo('Resetting update form...');
+                        $('#employeeUpdateForm')[0].reset();
+
+                        logInfo('Reloading employee list...');
+                        loadEmployees();
+
+                        logActionComplete('UPDATE EMPLOYEE');
+                    },
+                    error: function(xhr) {
+                        logError('Failed to update employee', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: xhr.responseJSON || xhr.responseText
+                        });
+                        showMessage('Error: ' + (xhr.responseJSON?.detail || 'Failed to update employee'), 'error');
+                        logActionComplete('UPDATE EMPLOYEE (with error)');
+                    }
+                });
+            });
+
+            // Cancel update
+            // This happens when someone clicks "Cancel" on the update form
+            $('#cancelUpdate').on('click', function() {
+                logAction('CANCEL UPDATE');
+                logInfo('User cancelled the update');
+
+                logInfo('Hiding update form...');
+                $('#updateForm').hide();
+
+                logInfo('Showing create form...');
+                $('#createForm').show();
+
+                logInfo('Resetting update form fields...');
+                $('#employeeUpdateForm')[0].reset();
+
+                logActionComplete('CANCEL UPDATE');
+            });
+
+            /**
+             * Load all employees from the server
+             *
+             * This function asks the server for the list of all employees
+             * and then displays them in the table.
+             * Like asking "Can you show me all employee cards?"
+             */
+            function loadEmployees() {
+                logAction('LOAD EMPLOYEES');
+                logInfo('Sending GET request to /api/employees...');
+
+                const token = getAccessToken();
+                if (!token) {
+                    logError('No access token found - user not logged in');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/employees',
+                    type: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(employees) {
+                        logSuccess('Received employee list from server!', {
+                            count: employees.length,
+                            employees: employees
+                        });
+
+                        logInfo('Displaying employees in table...');
+                        displayEmployees(employees);
+
+                        logActionComplete('LOAD EMPLOYEES');
+                    },
+                    error: function(xhr) {
+                        logError('Failed to load employees', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: xhr.responseJSON || xhr.responseText
+                        });
+                        showMessage('Error loading employees', 'error');
+                        logActionComplete('LOAD EMPLOYEES (with error)');
+                    }
+                });
+            }
+
+            /**
+             * Display employees in the table
+             *
+             * This function takes the employee list and creates table rows for each one.
+             * Like arranging employee cards on a display board!
+             *
+             * @param {Array} employees - List of employee objects to display
+             */
+            function displayEmployees(employees) {
+                logInfo('Starting to display employees...');
+                logInfo('Number of employees to display: ' + employees.length);
+
+                const tbody = $('#employeesTableBody');
+
+                logInfo('Clearing existing table rows...');
+                tbody.empty();
+
+                if (employees.length === 0) {
+                    logWarning('No employees found in database');
+                    tbody.append('<tr><td colspan="8" style="text-align: center;">No employees found</td></tr>');
+                    return;
+                }
+
+                logInfo('Creating table rows for each employee...');
+
+                employees.forEach(function(emp) {
+                    const pictureCell = emp.picture_url
+                        ? `<img src="${emp.picture_url}" alt="${emp.name}" class="employee-picture" data-picture="${emp.picture_url}">`
+                        : 'No picture';
+
+                    const resumeCell = emp.resume_url
+                        ? `<a href="javascript:void(0)" class="file-link resume-link" data-resume="${emp.resume_url}">View Resume</a>`
+                        : 'No resume';
+
+                    const row = `
+                        <tr>
+                            <td>${emp.id}</td>
+                            <td>${pictureCell}</td>
+                            <td>${emp.name}</td>
+                            <td>${emp.email}</td>
+                            <td>${emp.position || '-'}</td>
+                            <td>${emp.department || '-'}</td>
+                            <td>${resumeCell}</td>
+                            <td class="actions">
+                                <button class="btn btn-success btn-edit" data-id="${emp.id}">Edit</button>
+                                <button class="btn btn-danger btn-delete" data-id="${emp.id}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+
+                logSuccess('All employee rows created!');
+
+                logInfo('Attaching event handlers for pictures...');
+                // Attach event handlers for pictures
+                $('.employee-picture').on('click', function() {
+                    const pictureUrl = $(this).data('picture');
+                    logInfo('Employee picture clicked, opening modal...', { url: pictureUrl });
+                    openImageModal(pictureUrl);
+                });
+
+                logInfo('Attaching event handlers for resume links...');
+                // Attach event handlers for resume links
+                $('.resume-link').on('click', function() {
+                    const resumeUrl = $(this).data('resume');
+                    logInfo('Resume link clicked, opening modal...', { url: resumeUrl });
+                    openPdfModal(resumeUrl);
+                });
+
+                logInfo('Attaching event handlers for edit buttons...');
+                // Attach event handlers for edit and delete buttons
+                $('.btn-edit').on('click', function() {
+                    const employeeId = $(this).data('id');
+                    logInfo('Edit button clicked for employee ID: ' + employeeId);
+                    editEmployee(employeeId);
+                });
+
+                logInfo('Attaching event handlers for delete buttons...');
+                $('.btn-delete').on('click', function() {
+                    const employeeId = $(this).data('id');
+                    logInfo('Delete button clicked for employee ID: ' + employeeId);
+                    deleteEmployee(employeeId);
+                });
+
+                logSuccess('All event handlers attached!');
+            }
+
+            /**
+             * Edit an employee
+             *
+             * This function loads an employee's information and shows it in the update form.
+             * Like pulling out an employee card to make changes!
+             *
+             * @param {number} employeeId - The ID of the employee to edit
+             */
+            function editEmployee(employeeId) {
+                logAction('EDIT EMPLOYEE (ID: ' + employeeId + ')');
+                logInfo('Fetching employee details from server...');
+
+                $.ajax({
+                    url: '/api/employees/' + employeeId,
+                    type: 'GET',
+                    success: function(employee) {
+                        logSuccess('Employee details received!', employee);
+
+                        logInfo('Filling update form with employee data...');
+                        $('#updateId').val(employee.id);
+                        $('#updateName').val(employee.name);
+                        $('#updateEmail').val(employee.email);
+                        $('#updatePosition').val(employee.position || '');
+                        $('#updateDepartment').val(employee.department || '');
+
+                        logInfo('Hiding create form, showing update form...');
+                        $('#createForm').hide();
+                        $('#updateForm').show();
+
+                        logInfo('Scrolling to update form...');
+                        $('html, body').animate({
+                            scrollTop: $('#updateForm').offset().top - 20
+                        }, 500);
+
+                        logActionComplete('EDIT EMPLOYEE');
+                    },
+                    error: function(xhr) {
+                        logError('Failed to load employee details', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: xhr.responseJSON || xhr.responseText
+                        });
+                        showMessage('Error loading employee details', 'error');
+                        logActionComplete('EDIT EMPLOYEE (with error)');
+                    }
+                });
+            }
+
+            /**
+             * Delete an employee
+             *
+             * This function deletes an employee from the database.
+             * Like taking an employee card and shredding it - be careful!
+             *
+             * @param {number} employeeId - The ID of the employee to delete
+             */
+            function deleteEmployee(employeeId) {
+                logAction('DELETE EMPLOYEE (ID: ' + employeeId + ')');
+
+                logInfo('Asking user for confirmation...');
+                if (!confirm('Are you sure you want to delete this employee?')) {
+                    logInfo('User cancelled deletion');
+                    logActionComplete('DELETE EMPLOYEE (cancelled)');
+                    return;
+                }
+
+                logInfo('User confirmed deletion');
+                logInfo('Sending DELETE request to server...');
+
+                const token = getAccessToken();
+                if (!token) {
+                    logError('No access token found - user not logged in');
+                    showMessage('Please login first', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/employees/' + employeeId,
+                    type: 'DELETE',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    success: function(response) {
+                        logSuccess('Employee deleted successfully!', response);
+                        showMessage('Employee deleted successfully!', 'success');
+
+                        logInfo('Reloading employee list...');
+                        loadEmployees();
+
+                        logActionComplete('DELETE EMPLOYEE');
+                    },
+                    error: function(xhr) {
+                        logError('Failed to delete employee', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            response: xhr.responseJSON || xhr.responseText
+                        });
+                        showMessage('Error: ' + (xhr.responseJSON?.detail || 'Failed to delete employee'), 'error');
+                        logActionComplete('DELETE EMPLOYEE (with error)');
+                    }
+                });
+            }
+
+            // Show message
+            function showMessage(text, type) {
+                const messageDiv = $('#message');
+                messageDiv.removeClass('success error').addClass(type);
+                messageDiv.text(text);
+                messageDiv.fadeIn();
+
+                setTimeout(function() {
+                    messageDiv.fadeOut();
+                }, 5000);
+            }
+        });
+
+        // === MODAL FUNCTIONS ===
+        // These control the popup windows for pictures and PDFs
+
+        /**
+         * Open the image modal to show a picture
+         * Like opening a magnifying glass to see a photo bigger!
+         *
+         * @param {string} imageUrl - The web address of the image to show
+         */
+        function openImageModal(imageUrl) {
+            logAction('OPEN IMAGE MODAL');
+            logInfo('Setting image URL: ' + imageUrl);
+
+            $('#modalImage').attr('src', imageUrl);
+
+            logInfo('Showing image modal...');
+            $('#imageModal').fadeIn(300);
+
+            logActionComplete('OPEN IMAGE MODAL');
+        }
+
+        /**
+         * Close the image modal
+         * Like closing the magnifying glass
+         */
+        function closeImageModal() {
+            logAction('CLOSE IMAGE MODAL');
+            logInfo('Hiding image modal...');
+
+            $('#imageModal').fadeOut(300);
+
+            logInfo('Clearing image URL...');
+            $('#modalImage').attr('src', '');
+
+            logActionComplete('CLOSE IMAGE MODAL');
+        }
+
+        // PDF.js global variables
+        let pdfDoc = null;
+        let currentPageNum = 1;
+        let totalPagesNum = 0;
+
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        /**
+         * Open the PDF modal to show a resume
+         * Like opening a document viewer!
+         *
+         * @param {string} pdfUrl - The web address of the PDF to show
+         */
+        function openPdfModal(pdfUrl) {
+            logAction('OPEN PDF MODAL');
+            logInfo('PDF URL: ' + pdfUrl);
+
+            // Set download link
+            $('#downloadPdf').attr('href', pdfUrl);
+
+            // Show modal
+            logInfo('Showing PDF modal...');
+            $('#pdfModal').fadeIn(300);
+
+            // Show loading message
+            $('#pdfLoading').show();
+            $('#pdfContainer').hide();
+            $('#pdfControls').hide();
+
+            // Load and render the PDF using PDF.js
+            logInfo('Loading PDF with PDF.js...');
+            loadPDF(pdfUrl);
+
+            logActionComplete('OPEN PDF MODAL');
+        }
+
+        /**
+         * Load and render PDF using PDF.js
+         * This actually fetches the PDF and draws it on the page
+         */
+        async function loadPDF(url) {
+            try {
+                logInfo('Fetching PDF from URL...');
+
+                // Load the PDF document
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                totalPagesNum = pdfDoc.numPages;
+
+                logSuccess('PDF loaded successfully!', {
+                    totalPages: totalPagesNum
+                });
+
+                // Hide loading, show container
+                $('#pdfLoading').hide();
+                $('#pdfContainer').show();
+                $('#pdfControls').show();
+
+                // Update page counter
+                $('#totalPages').text(totalPagesNum);
+                $('#currentPage').text(1);
+                currentPageNum = 1;
+
+                // Render the first page
+                await renderPage(1);
+
+            } catch (error) {
+                logError('Failed to load PDF', error);
+                $('#pdfLoading').html('<p style="color: red;">Failed to load PDF. Please use the Download button.</p>');
+            }
+        }
+
+        /**
+         * Render a specific page of the PDF
+         */
+        async function renderPage(pageNum) {
+            try {
+                logInfo('Rendering page ' + pageNum + '...');
+
+                // Get the page
+                const page = await pdfDoc.getPage(pageNum);
+
+                // Calculate scale to fit the modal width
+                const modalWidth = $('#pdfContainer').width() || 800;
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = modalWidth / viewport.width;
+                const scaledViewport = page.getViewport({ scale: scale });
+
+                // Clear previous page
+                $('#pdfContainer').empty();
+
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = scaledViewport.height;
+                canvas.width = scaledViewport.width;
+                canvas.style.display = 'block';
+                canvas.style.margin = '0 auto';
+
+                // Append canvas to container
+                $('#pdfContainer').append(canvas);
+
+                // Render PDF page into canvas context
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: scaledViewport
+                };
+
+                await page.render(renderContext).promise;
+
+                logSuccess('Page ' + pageNum + ' rendered successfully!');
+
+                // Update current page display
+                $('#currentPage').text(pageNum);
+                currentPageNum = pageNum;
+
+                // Update button states
+                $('#prevPage').prop('disabled', pageNum <= 1);
+                $('#nextPage').prop('disabled', pageNum >= totalPagesNum);
+
+            } catch (error) {
+                logError('Failed to render page ' + pageNum, error);
+            }
+        }
+
+        /**
+         * Go to previous page
+         */
+        function previousPage() {
+            if (currentPageNum <= 1) return;
+            renderPage(currentPageNum - 1);
+        }
+
+        /**
+         * Go to next page
+         */
+        function nextPage() {
+            if (currentPageNum >= totalPagesNum) return;
+            renderPage(currentPageNum + 1);
+        }
+
+        /**
+         * Close the PDF modal
+         * Like closing the document viewer
+         */
+        function closePdfModal() {
+            logAction('CLOSE PDF MODAL');
+            logInfo('Hiding PDF modal...');
+
+            $('#pdfModal').fadeOut(300);
+
+            logInfo('Clearing PDF data...');
+            $('#pdfContainer').empty();
+            $('#pdfLoading').show();
+            $('#pdfControls').hide();
+            pdfDoc = null;
+            currentPageNum = 1;
+            totalPagesNum = 0;
+
+            logActionComplete('CLOSE PDF MODAL');
+        }
+
+        // Close modal when clicking outside (on the dark overlay)
+        $(document).on('click', '.modal', function(e) {
+            if (e.target === this) {
+                logInfo('User clicked outside modal, closing...');
+                closeImageModal();
+                closePdfModal();
+            }
+        });
+
+        // Close modal when pressing ESC key
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape') {
+                logInfo('User pressed ESC key, closing modals...');
+                closeImageModal();
+                closePdfModal();
+            }
+        });
+    </script>
+</body>
+</html>

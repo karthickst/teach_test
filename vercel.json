@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "postgresql://neondb_owner:npg_36MaJuyTbScI@ep-weathered-unit-ahc8hg3u-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require",
+    "BLOB_READ_WRITE_TOKEN": "vercel_blob_rw_eoYKodv04u6VYgX4_R0lYcUOoOkIT2JBj8ZCL2aQ9AxXXPs"
+  }
+}
