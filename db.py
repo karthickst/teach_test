@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 # This is like the address of our database "house"
 DATABASE_URL = os.getenv(
     'DATABASE_URL',
-    'postgresql://neondb_owner:npg_36MaJuyTbScI@ep-weathered-unit-ahc8hg3u-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require'
+    '__JUNK__'
 )
 
 logger.info("📚 Database module loaded successfully!")
